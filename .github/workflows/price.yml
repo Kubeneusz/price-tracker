@@ -22,3 +22,11 @@ jobs:
         run: playwright install --with-deps
 
       - run: python tracker.py
+
+      - name: Commit price history
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add prices.json
+          git commit -m "update prices" || echo "no changes"
+          git push
