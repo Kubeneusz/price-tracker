@@ -8,3 +8,6 @@ def notify(msg):
         f"https://api.telegram.org/bot{TOKEN}/sendMessage",
         data={"chat_id": CHAT_ID, "text": msg}
     )
+
+print("Start trackera")
+
