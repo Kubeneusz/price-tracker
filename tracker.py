@@ -88,7 +88,7 @@ def get_prices():
 # --- MAIN ---
 def main():
     print("➡️ Start trackera...")
-
+    notify("✅ Tracker działa!")
     current = get_prices()
     history = load_data()
 
