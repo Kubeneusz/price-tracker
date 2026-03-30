@@ -1,60 +1,99 @@
 from playwright.sync_api import sync_playwright
-import re
+import json
+import os
+from datetime import datetime
 
 URL = "https://www.profinfo.pl/sklep/komentarz-do-spraw-o-podzial-majatku-wspolnego-malzonkow,157665.html"
 
-print("➡️ Start Playwright...")
+FILE = "prices.json"
+
 
 def parse_price(text):
-    # wyciąga liczbę z "197,03 zł"
     return float(text.replace("zł", "").replace(",", ".").strip())
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
 
-    print("➡️ Otwieram stronę...")
-    page.goto(URL, timeout=60000)
+def load_data():
+    if not os.path.exists(FILE):
+        return []
+    with open(FILE, "r") as f:
+        return json.load(f)
 
-    # czekamy aż załaduje się sekcja z produktami
-    page.wait_for_selector(".rwd-option-product", timeout=15000)
 
-    print("➡️ Szukam cen...")
+def save_data(data):
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
-    options = page.locator(".rwd-option-product")
-    count = options.count()
 
-    print(f"Znaleziono opcji: {count}")
+def get_prices():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
 
-    results = {}
+        page.goto(URL, timeout=60000)
+        page.wait_for_selector(".rwd-option-product", timeout=15000)
 
-    for i in range(count):
-        option = options.nth(i)
+        options = page.locator(".rwd-option-product")
+        count = options.count()
 
-        # sprawdzamy typ produktu
-        input_el = option.locator("input")
-        data_type = input_el.get_attribute("data-type")
+        results = {}
 
-        if data_type in ["book", "book_paper_ebooks"]:
-            print(f"\n➡️ Analizuję: {data_type}")
+        for i in range(count):
+            option = options.nth(i)
+            input_el = option.locator("input")
+            data_type = input_el.get_attribute("data-type")
 
-            # najpierw próbujemy promo
-            promo = option.locator(".price-promo")
+            if data_type in ["book", "book_paper_ebooks"]:
+                promo = option.locator(".price-promo")
 
-            if promo.count() > 0:
-                price_text = promo.inner_text()
-                print(f"💰 Promo price: {price_text}")
-            else:
-                # fallback jeśli nie ma promo
-                price_text = option.locator(".price").inner_text()
-                print(f"💰 Regular price: {price_text}")
+                if promo.count() > 0:
+                    price_text = promo.inner_text()
+                else:
+                    price_text = option.locator(".price").inner_text()
 
-            price = parse_price(price_text)
+                price = parse_price(price_text)
+                results[data_type] = price
 
-            results[data_type] = price
+        browser.close()
+        return results
 
-    browser.close()
 
-print("\n📊 WYNIKI:")
-for k, v in results.items():
-    print(f"{k}: {v} zł")
+def main():
+    print("➡️ Start trackera...")
+
+    current = get_prices()
+    history = load_data()
+
+    print(f"📊 Aktualne ceny: {current}")
+
+    # ostatni wpis
+    last = history[-1]["prices"] if history else {}
+
+    # najniższe ceny w historii
+    min_prices = {}
+
+    for entry in history:
+        for k, v in entry["prices"].items():
+            if k not in min_prices or v < min_prices[k]:
+                min_prices[k] = v
+
+    # 🔔 logika alertów
+    for k, price in current.items():
+        print(f"\n➡️ {k}: {price} zł")
+
+        if k in last and price < last[k]:
+            print(f"🔻 SPADŁA (było {last[k]})")
+
+        if k not in min_prices or price < min_prices[k]:
+            print(f"🔥 NAJNIŻSZA EVER!")
+
+    # zapis
+    history.append({
+        "date": datetime.now().isoformat(),
+        "prices": current
+    })
+
+    save_data(history)
+
+
+if __name__ == "__main__":
+    main()
