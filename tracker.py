@@ -1,29 +1,23 @@
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 URL = "https://www.profinfo.pl/sklep/komentarz-do-spraw-o-podzial-majatku-wspolnego-malzonkow,157665.html"
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0"
-}
+print("➡️ Start Playwright...")
 
-print("➡️ Start scrapowania...")
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
 
-response = requests.get(URL, headers=HEADERS)
+    print("➡️ Otwieram stronę...")
+    page.goto(URL, timeout=60000)
 
-print(f"Status HTTP: {response.status_code}")
+    print("➡️ Czekam na załadowanie ceny...")
 
-soup = BeautifulSoup(response.text, "html.parser")
+    # 🔴 kluczowe — czekamy aż cena się pojawi
+    page.wait_for_selector('[itemprop="price"]', timeout=15000)
 
-# 🔍 próbujemy znaleźć cenę
-price_tag = soup.select_one('[itemprop="price"]')
+    price = page.locator('[itemprop="price"]').get_attribute("content")
 
-if price_tag:
-    price = price_tag.get("content")
-    print(f"💰 Znaleziona cena: {price} zł")
-else:
-    print("❌ Nie znaleziono ceny!")
-    
-    # DEBUG: pokaż kawałek HTML
-    print("\n🔎 Fragment HTML:")
-    print(soup.prettify()[:1000])
+    print(f"💰 Cena: {price} zł")
+
+    browser.close()
