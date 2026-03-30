@@ -2,8 +2,9 @@ name: Price Tracker
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # co 6 godzin
+    - cron: "*/5 * * * *"
   workflow_dispatch:
+  push:
 
 permissions:
   contents: write
