@@ -3,7 +3,10 @@ name: Price Tracker
 on:
   schedule:
     - cron: "0 */6 * * *"   # co 6 godzin
-  workflow_dispatch:        # ręczne uruchomienie
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run:
@@ -23,14 +26,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🔥 szybsza instalacja Playwright (bez --with-deps)
       - name: Install Playwright (Chromium only)
         run: playwright install chromium
 
       - name: Run tracker
         run: python tracker.py
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      # 💾 zapis historii do repo
       - name: Commit price history
         run: |
           git config --global user.name "github-actions"
