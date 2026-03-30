@@ -2,7 +2,7 @@ name: Price Tracker
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # co 6 godzin
+    - cron: "0 */0.2 * * *"   # co 6 godzin
   workflow_dispatch:
 
 permissions:
