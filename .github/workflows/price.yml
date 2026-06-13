@@ -1,52 +1,52 @@
-name: Price Tracker
+# name: Price Tracker
 
-on:
-  schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
-  push:
+# on:
+#   schedule:
+#     - cron: "*/5 * * * *"
+#   workflow_dispatch:
+#   push:
 
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 
-jobs:
-  run:
-    runs-on: ubuntu-latest
+# jobs:
+#   run:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+#       - name: Setup Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
 
-      - name: Install Playwright (Chromium only)
-        run: playwright install chromium
+#       - name: Install Playwright (Chromium only)
+#         run: playwright install chromium
 
-      - name: Run tracker
-        run: python tracker.py
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+#       - name: Run tracker
+#         run: python tracker.py
+#         env:
+#           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+#           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      - name: Commit price history
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+#       - name: Commit price history
+#         run: |
+#           git config --global user.name "github-actions"
+#           git config --global user.email "actions@github.com"
       
-          git pull --rebase || true
+#           git pull --rebase || true
       
-          git add prices.json
-          git commit -m "update prices" || echo "no changes"
+#           git add prices.json
+#           git commit -m "update prices" || echo "no changes"
       
-          git push || (
-            git pull --rebase &&
-            git push
-          )
+#           git push || (
+#             git pull --rebase &&
+#             git push
+#           )
