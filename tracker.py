@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 import requests
 
-URL = "https://www.profinfo.pl/sklep/komentarz-do-spraw-o-podzial-majatku-wspolnego-malzonkow,157665.html"
+URL = "https://www.profinfo.pl/sklep/komentarz-do-spraw-o-podzial-majatku-wspolnego-malzonkow,736603.html?gad_source=1&gad_campaignid=17339281099&gbraid=0AAAAADtElmzp8vlOWDja9cbOATYhrRqL2&gclid=Cj0KCQjwkt_UBhDMARIsALpnOAy0dSlAC_FffrQQnv78WuOOhFkUa4WH5ZRO95HMUlyQ3JK1bOTVbkUaAjb8EALw_wcB#book_ebooks"
 FILE = "prices.json"
 
 
